@@ -71,20 +71,6 @@ module SitePrism
       raise SitePrism::UnsupportedBlock, "#{obj.class}##{name}"
     end
 
-    def raise_wait_for_if_failed(obj, name, timeout, failed)
-      return unless SitePrism.raise_on_wait_fors && failed
-
-      raise SitePrism::TimeOutWaitingForExistenceError, \
-            "Timed out after #{timeout}s waiting for #{obj.class}##{name}"
-    end
-
-    def raise_wait_for_no_if_failed(obj, name, timeout, failed)
-      return unless SitePrism.raise_on_wait_fors && failed
-
-      raise SitePrism::TimeOutWaitingForNonExistenceError, \
-            "Timed out after #{timeout}s waiting for no #{obj.class}##{name}"
-    end
-
     def merge_args(find_args, runtime_args, override_options = {})
       find_args = find_args.dup
       runtime_args = runtime_args.dup
@@ -159,11 +145,14 @@ module SitePrism
       method_name = "wait_for_#{element_name}"
       create_helper_method(method_name, *find_args) do
         define_method(method_name) do |timeout = Capybara.default_max_wait_time, *runtime_args|
-          result = Capybara.using_wait_time(timeout) do
-            element_exists?(*self.class.merge_args(find_args, runtime_args))
+          begin
+            Waiter.wait_until_true do
+              element_exists?(*self.class.merge_args(find_args, runtime_args))
+            end
+          rescue SitePrism::TimeoutException
+            raise SitePrism::TimeOutWaitingForExistenceError, \
+              "Timed out after #{timeout}s waiting for #{self.class}##{element_name.to_s}"
           end
-          self.class.raise_wait_for_if_failed(self, element_name.to_s, timeout, !result)
-          result
         end
       end
     end
@@ -172,11 +161,14 @@ module SitePrism
       method_name = "wait_for_no_#{element_name}"
       create_helper_method(method_name, *find_args) do
         define_method(method_name) do |timeout = Capybara.default_max_wait_time, *runtime_args|
-          result = Capybara.using_wait_time(timeout) do
-            element_does_not_exist?(*self.class.merge_args(find_args, runtime_args))
+          begin
+            Waiter.wait_until_true do
+              element_does_not_exist?(*self.class.merge_args(find_args, runtime_args))
+            end
+          rescue SitePrism::TimeoutException
+            raise SitePrism::TimeOutWaitingForNonExistenceError, \
+              "Timed out after #{timeout}s waiting for no #{self.class}##{element_name.to_s}"
           end
-          self.class.raise_wait_for_no_if_failed(self, element_name.to_s, timeout, !result)
-          result
         end
       end
     end
@@ -185,8 +177,13 @@ module SitePrism
       method_name = "wait_until_#{element_name}_visible"
       create_helper_method(method_name, *find_args) do
         define_method(method_name) do |timeout = Capybara.default_max_wait_time, *runtime_args|
-          unless element_exists?(*self.class.merge_args(find_args, runtime_args, visible: true, wait: timeout))
-            raise SitePrism::TimeOutWaitingForElementVisibility
+          begin
+            Waiter.wait_until_true do
+              element_exists?(*self.class.merge_args(find_args, runtime_args, visible: true, wait: timeout))
+            end
+          rescue SitePrism::TimeoutException
+            raise SitePrism::TimeOutWaitingForElementVisibility, \
+              "Timed out after #{timeout}s waiting for #{self.class}##{element_name.to_s} to become visible"
           end
         end
       end
@@ -196,8 +193,13 @@ module SitePrism
       method_name = "wait_until_#{element_name}_invisible"
       create_helper_method(method_name, *find_args) do
         define_method(method_name) do |timeout = Capybara.default_max_wait_time, *runtime_args|
-          unless element_does_not_exist?(*self.class.merge_args(find_args, runtime_args, visible: true, wait: timeout))
-            raise SitePrism::TimeOutWaitingForElementInvisibility
+          begin
+            Waiter.wait_until_true do
+              element_does_not_exist?(*self.class.merge_args(find_args, runtime_args, visible: true, wait: timeout))
+            end
+          rescue SitePrism::TimeoutException
+            raise SitePrism::TimeOutWaitingForElementInvisibility, \
+              "Timed out after #{timeout}s waiting for #{self.class}##{element_name.to_s} to become invisible"
           end
         end
       end
