@@ -146,6 +146,7 @@ module SitePrism
       create_helper_method(method_name, *find_args) do
         define_method(method_name) do |timeout = Capybara.default_max_wait_time, *runtime_args|
           begin
+            puts "CUSTOM HELPER"
             Waiter.wait_until_true do
               element_exists?(*self.class.merge_args(find_args, runtime_args))
             end
