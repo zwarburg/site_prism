@@ -151,7 +151,7 @@ module SitePrism
             end
           rescue SitePrism::TimeoutException
             raise SitePrism::TimeOutWaitingForExistenceError, \
-              "Timed out after #{timeout}s waiting for #{self.class}##{element_name.to_s}"
+                  "Timed out after #{timeout}s waiting for #{self.class}##{element_name}"
           end
         end
       end
@@ -167,7 +167,7 @@ module SitePrism
             end
           rescue SitePrism::TimeoutException
             raise SitePrism::TimeOutWaitingForNonExistenceError, \
-              "Timed out after #{timeout}s waiting for no #{self.class}##{element_name.to_s}"
+                  "Timed out after #{timeout}s waiting for no #{self.class}##{element_name}"
           end
         end
       end
@@ -183,7 +183,7 @@ module SitePrism
             end
           rescue SitePrism::TimeoutException
             raise SitePrism::TimeOutWaitingForElementVisibility, \
-              "Timed out after #{timeout}s waiting for #{self.class}##{element_name.to_s} to become visible"
+                  "Timed out after #{timeout}s waiting for #{self.class}##{element_name} to become visible"
           end
         end
       end
@@ -199,7 +199,7 @@ module SitePrism
             end
           rescue SitePrism::TimeoutException
             raise SitePrism::TimeOutWaitingForElementInvisibility, \
-              "Timed out after #{timeout}s waiting for #{self.class}##{element_name.to_s} to become invisible"
+                  "Timed out after #{timeout}s waiting for #{self.class}##{element_name} to become invisible"
           end
         end
       end
